@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoAcción - Iniciar Sesión</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2ecf92 0%, #6bd497 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem 2.5rem;
+        }
+        
+        .logo {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a202c;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #2a9b6c;
+        }
+        
+        .avatar-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        
+        .avatar-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 3px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+        
+        .avatar-option:hover {
+            transform: scale(1.1);
+            border-color: #cbd5e0;
+        }
+        
+        .avatar-option.selected {
+            border-color: #3daf7f;
+            background: #f7fafc;
+            transform: scale(1.15);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #37996b 0%, #1a5042 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102,126,234,0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .toggle-form {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #718096;
+            font-size: 0.95rem;
+        }
+        
+        .toggle-form a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .success-message {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        #registerForm { display: none; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="logo">🌍</div>
+        <h1 id="formTitle">Iniciar Sesión</h1>
+        <p class="subtitle">Bienvenido a EcoAcción</p>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <!-- Login Form -->
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginUsername">Nombre de usuario</label>
+                <input type="text" id="loginUsername" required autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Contraseña</label>
+                <input type="password" id="loginPassword" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" class="btn" id="loginBtn">Iniciar Sesión</button>
+        </form>
+        
+        <!-- Register Form -->
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="registerUsername">Nombre de usuario</label>
+                <input type="text" id="registerUsername" required minlength="3" autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label for="registerPassword">Contraseña</label>
+                <input type="password" id="registerPassword" required minlength="6" autocomplete="new-password">
+            </div>
+            
+            <div class="form-group">
+                <label>Elige tu avatar</label>
+                <div class="avatar-selector">
+                    <div class="avatar-option selected" data-avatar="👤">👤</div>
+                    <div class="avatar-option" data-avatar="🌱">🌱</div>
+                    <div class="avatar-option" data-avatar="🌍">🌍</div>
+                    <div class="avatar-option" data-avatar="♻️">♻️</div>
+                    <div class="avatar-option" data-avatar="🌳">🌳</div>
+                    <div class="avatar-option" data-avatar="💚">💚</div>
+                    <div class="avatar-option" data-avatar="🐾">🐾</div>
+                    <div class="avatar-option" data-avatar="🌊">🌊</div>
+                    <div class="avatar-option" data-avatar="🌈">🌈</div>
+                    <div class="avatar-option" data-avatar="⭐">⭐</div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn" id="registerBtn">Crear Cuenta</button>
+        </form>
+        
+        <div class="toggle-form">
+            <span id="toggleText">¿No tienes cuenta? <a id="toggleLink">Regístrate aquí</a></span>
+        </div>
+    </div>
+    
+    <script>
+        const SUPABASE_URL = 'https://exvqunlzdsczpqeoirah.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4dnF1bmx6ZHNjenBxZW9pcmFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1NTYwOTksImV4cCI6MjA3ODEzMjA5OX0.Ygn-MjhSrLjsagR91w16mkUV57Di0jH3G7N5-TibtX8';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let selectedAvatar = '👤';
+        let isLoginMode = true;
+        
+        // Avatar selection
+        document.querySelectorAll('.avatar-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedAvatar = this.dataset.avatar;
+            });
+        });
+        
+        // Toggle between login and register
+        document.getElementById('toggleLink').addEventListener('click', function() {
+            isLoginMode = !isLoginMode;
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const formTitle = document.getElementById('formTitle');
+            const toggleText = document.getElementById('toggleText');
+            
+            if (isLoginMode) {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                formTitle.textContent = 'Iniciar Sesión';
+                toggleText.innerHTML = '¿No tienes cuenta? <a id="toggleLink">Regístrate aquí</a>';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                formTitle.textContent = 'Crear Cuenta';
+                toggleText.innerHTML = '¿Ya tienes cuenta? <a id="toggleLink">Inicia sesión aquí</a>';
+            }
+            
+            hideMessages();
+            
+            // Re-attach event listener
+            document.getElementById('toggleLink').addEventListener('click', arguments.callee);
+        });
+        
+        // Hash password (simple hash for demo - in production use better encryption)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        // Register
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideMessages();
+            
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const btn = document.getElementById('registerBtn');
+            
+            if (username.length < 3) {
+                showError('El nombre de usuario debe tener al menos 3 caracteres');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('La contraseña debe tener al menos 6 caracteres');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Creando cuenta...';
+            
+            try {
+                // Check if username exists
+                const { data: existing } = await supabaseClient
+                    .from('auth_users')
+                    .select('username')
+                    .eq('username', username);
+                
+                if (existing && existing.length > 0) {
+                    showError('Este nombre de usuario ya existe. Elige otro.');
+                    btn.disabled = false;
+                    btn.textContent = 'Crear Cuenta';
+                    return;
+                }
+                
+                // Create user
+                const userId = 'auth_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                const passwordHash = await hashPassword(password);
+                
+                const { error } = await supabaseClient
+                    .from('auth_users')
+                    .insert({
+                        id: userId,
+                        username: username,
+                        password_hash: passwordHash,
+                        avatar: selectedAvatar
+                    });
+                
+                if (error) throw error;
+                
+                showSuccess('¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.');
+                // Crear registro en la tabla users
+                const { error: userError } = await supabaseClient
+                .from('users')
+                .insert({
+                    id: userId,
+                    name: username,
+                    points: 0,
+                    level: 1,
+                    quizzes_completed: 0,
+                    avatar: selectedAvatar,
+                    environmental_impact: { bottles: 0, waterLiters: 0, energyKwh: 0, co2Kg: 0 },
+                    streak_data: { currentStreak: 0, lastActiveDate: null },
+                    quizzes_progress: {},
+                    unlocked_badges: {} // <CHANGE> Agregar unlocked_badges
+                });
+                
+                if (userError) {
+                    console.log('[v0] Error al crear usuario:', userError);
+                    showError('Error al crear el perfil de usuario');
+                    return;
+                }
+                
+                // Reset form
+                document.getElementById('registerForm').reset();
+                selectedAvatar = '👤';
+                
+                // Switch to login after 2 seconds
+                setTimeout(() => {
+                    document.getElementById('toggleLink').click();
+                }, 2000);
+                
+            } catch (error) {
+                showError('Error al crear cuenta: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Crear Cuenta';
+            }
+        });
+        
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideMessages();
+            
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const btn = document.getElementById('loginBtn');
+            
+            btn.disabled = true;
+            btn.textContent = 'Iniciando sesión...';
+            
+            try {
+                const passwordHash = await hashPassword(password);
+                
+                const { data: users, error } = await supabaseClient
+                .from('auth_users')
+                .select('*')
+                .eq('username', username)
+                .eq('password_hash', passwordHash);
+                
+                if (error) {
+                    console.log('[v0] Error de Supabase:', error);
+                    showError('Error al conectar con el servidor');
+                    btn.disabled = false;
+                    btn.textContent = 'Iniciar Sesión';
+                    return;
+                }
+                
+                if (!users || users.length === 0) {
+                    showError('Usuario o contraseña incorrectos');
+                    btn.disabled = false;
+                    btn.textContent = 'Iniciar Sesión';
+                    return;
+                }
+                const user = users[0];
+                
+                // Save session
+                localStorage.setItem('eco_auth_user', JSON.stringify({
+                    id: user.id,
+                    username: user.username,
+                    avatar: user.avatar
+                }));
+                
+                localStorage.setItem('eco_user_id', user.id);
+                
+                showSuccess('¡Bienvenido de vuelta! Redirigiendo...');
+                
+                // Redirect to main app
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+                
+            } catch (error) {
+                showError('Error al iniciar sesión: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = 'Iniciar Sesión';
+            }
+        });
+    </script>
+</body>
+</html>
